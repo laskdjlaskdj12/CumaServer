@@ -27,7 +27,8 @@ SOURCES += \
     main.cpp \
     server.cpp \
     ClientHandler/Spread/spreadhandler.cpp \
-    DbAddressPath/dbaddresspathbyfile.cpp
+    DbAddressPath/dbaddresspathbyfile.cpp \
+    FileBlockStorage/filefrag.cpp
 
 SUBDIRS += \
     Server.pro
@@ -52,5 +53,9 @@ HEADERS += \
     server.h \
     Log/debuglog.h \
     ClientHandler/Spread/spreadhandler.h \
-    DbAddressPath/dbaddresspathbyfile.h
+    DbAddressPath/dbaddresspathbyfile.h \
+    FileBlockStorage/filefrag.h \
+    serverspreadtest.h \
+    Test/serverspreadtest.h \
+    Test/servertest.h
 

@@ -11,6 +11,9 @@
 #include "Block/AddressBlock/addressblock.h"
 #include "ClientHandler/clienthandler.h"
 
+#include "DbAddressPath/dbaddresspathbyfile.h"
+#include "FileBlockStorage/filefrag.h"
+
 namespace Cuma
 {
 
@@ -19,7 +22,9 @@ class Server : public QObject
     Q_OBJECT
 public:
     explicit Server(unsigned int Port,
-                    QSharedPointer<Cuma::NetworkConfig::ServerList> list);
+                    QSharedPointer<Cuma::NetworkConfig::ServerList>& list,
+                    QSharedPointer<Cuma::DbAddress::DbAddressPathByFile>& DbAddressByFile,
+                    QSharedPointer<Cuma::FileBlockStorage::FileFragDir>& FileStorage);
 
     ~Server();
 
@@ -43,11 +48,17 @@ private:
 
     QMap<QString, QSharedPointer<Cuma::ClientHandler> > RunningClientHandler;
 
-    QSharedPointer<Cuma::NetworkConfig::ServerList> List;
+    QSharedPointer<Cuma::NetworkConfig::ServerList> ServerList;
 
     QVector<QSharedPointer<QThread>> ClientHandlerThreadList;
 
     unsigned int port;
+
+private:
+    QSharedPointer<Cuma::DbAddress::DbAddressPathByFile>& DbAddressByFile;
+
+    QSharedPointer<Cuma::FileBlockStorage::FileFragDir>& FileBlockStorage;
+
 };
 
 }

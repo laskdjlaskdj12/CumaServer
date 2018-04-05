@@ -89,7 +89,7 @@ protected:
         return ReturnBlock;
     }
 
-    void makeFileSaveRequest()
+    Cuma::Protocol::CumaProtocolBlock makeFileSaveRequest()
     {
         Cuma::FileBlock::FileBlock RequestSaveBlock;
 
@@ -121,6 +121,10 @@ private slots:
         //ServerList를 구성
         QSharedPointer<Cuma::NetworkConfig::ServerList> TempServerlist = makeSingleServerList();
 
+        //서버에서 사용할 DbAddress와 FileFragDir를 만듬
+        QSharedPointer<Cuma::DbAddress::DbAddressPathByFile> TestDbAddressByFile;
+        QSharedPointer<Cuma::FileBlockStorage::FileFragDir> TestFileBlockStorage;
+
         //moc클라이언트를 실행
         QSharedPointer<QThread> ClientThread = QSharedPointer<QThread>::create();
         QSharedPointer<TestClient> Client = QSharedPointer<TestClient>::create();
@@ -129,38 +133,15 @@ private slots:
         QSignalSpy ClientRecvSignal(Client.data(), &TestClient::Complete);
 
         QSharedPointer<QThread> ServerThread = QSharedPointer<QThread>::create();
-        QSharedPointer<Cuma::Server> Server = QSharedPointer<Cuma::Server>::create(7071, makeSingleServerList());
+        QSharedPointer<Cuma::Server> Server = QSharedPointer<Cuma::Server>::create(7071,
+                                              TempServerlist,
+                                              TestDbAddressByFile,
+                                              TestFileBlockStorage);
+
         StartServerThread(Server, ServerThread);
 
         //클라이언트의 Connection을 요청
         emit SendProtocol("127.0.0.1", 7071, makeConnectionBlock());
-
-        QVERIFY (ClientRecvSignal.wait(5000) == true);
-
-        QVERIFY (ClientRecvSignal.takeFirst().at(0).toBool());
-        StopServerClient(Client, ClientThread, Server, ServerThread);
-    }
-
-    void ServerSpread()
-    {
-        qRegisterMetaType<Cuma::Protocol::CumaProtocolBlock>("Cuma::Protocol::CumaProtocolBlock");
-
-        //ServerList를 구성
-        QSharedPointer<Cuma::NetworkConfig::ServerList> TempServerlist = makeSingleServerList();
-
-        //moc클라이언트를 실행
-        QSharedPointer<QThread> ClientThread = QSharedPointer<QThread>::create();
-        QSharedPointer<TestClient> Client = QSharedPointer<TestClient>::create();
-        StartClientThread(Client, ClientThread);
-
-        QSignalSpy ClientRecvSignal(Client.data(), &TestClient::Complete);
-
-        QSharedPointer<QThread> ServerThread = QSharedPointer<QThread>::create();
-        QSharedPointer<Cuma::Server> Server = QSharedPointer<Cuma::Server>::create(7071, makeSingleServerList());
-        StartServerThread(Server, ServerThread);
-
-        //클라이언트의 Connection을 요청
-        emit SendProtocol("127.0.0.1", 7071, makeFileSaveRequest());
 
         QVERIFY (ClientRecvSignal.wait(5000) == true);
 

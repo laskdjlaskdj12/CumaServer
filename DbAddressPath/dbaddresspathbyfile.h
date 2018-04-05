@@ -22,7 +22,7 @@
 namespace Cuma
 {
 
-namespace Address
+namespace DbAddress
 {
 
 class DbAddressPathByFile : public QObject
@@ -50,6 +50,8 @@ public:
     virtual QString GetErrorString();
 
     virtual QSqlError GetError();
+
+    virtual bool isError();
 
 protected:
     QSqlDatabase AddressDb;

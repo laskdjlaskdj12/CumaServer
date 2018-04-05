@@ -1,8 +1,13 @@
 #include "server.h"
 
-Cuma::Server::Server(unsigned int Port, QSharedPointer<Cuma::NetworkConfig::ServerList> list):
-    List(list),
-    port(Port)
+Cuma::Server::Server(unsigned int Port,
+                     QSharedPointer<Cuma::NetworkConfig::ServerList>& list,
+                     QSharedPointer<Cuma::DbAddress::DbAddressPathByFile>& DbAddressByFile,
+                     QSharedPointer<Cuma::FileBlockStorage::FileFragDir>& FileStorage):
+    ServerList(list),
+    port(Port),
+    DbAddressByFile(DbAddressByFile),
+    FileBlockStorage(FileStorage)
 {
     ConnectRequestServer = QSharedPointer<QTcpServer>::create();
 }
@@ -25,7 +30,11 @@ void Cuma::Server::OnConnect()
 
     JsonSocket->set_socket(Socket);
 
-    QSharedPointer<Cuma::ClientHandler> Handler = QSharedPointer<Cuma::ClientHandler>::create(JsonSocket, List);
+    QSharedPointer<Cuma::ClientHandler> Handler = QSharedPointer<Cuma::ClientHandler>::create(JsonSocket,
+            ServerList,
+            DbAddressByFile,
+            FileBlockStorage,
+            QCryptographicHash::Sha3_512);
 
     QSharedPointer<QThread> Thread = QSharedPointer<QThread>::create();
 

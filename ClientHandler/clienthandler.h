@@ -26,6 +26,9 @@
 #include "Log/debuglog.h"
 #include "BypassHandler/bypasshandler.h"
 
+//Spread 클래스
+#include "ClientHandler/Spread/spreadhandler.h"
+
 namespace Cuma
 {
 
@@ -35,8 +38,16 @@ class ClientHandler: public QObject
 
 public:
     ClientHandler(QSharedPointer<QtJsonSocketLib_v3> client,
-                  QSharedPointer<Cuma::NetworkConfig::ServerList> ServerList);
+                  QSharedPointer<Cuma::NetworkConfig::ServerList> ServerList,
+                  QSharedPointer<Cuma::DbAddress::DbAddressPathByFile>& DbAddressPath,
+                  QSharedPointer<Cuma::FileBlockStorage::FileFragDir>& FileStorage,
+                  QCryptographicHash::Algorithm Algorithm);
+
     ~ClientHandler();
+
+    void ReplyControl(Cuma::Protocol::CumaProtocolBlock RecvProtocol);
+
+    void ReplyFailControl(const Cuma::Protocol::CumaProtocolBlock& RecvBlock, const QString& str);
 
 public slots:
     void Start();
@@ -86,6 +97,17 @@ private:
     QSharedPointer<BypassHandler> bypassHandler;
 
     bool IsBypassBrockerActive;
+
+private:
+    /*
+     * ConnectHandler 에서 사용한 Dependency
+     * */
+    QSharedPointer<Cuma::DbAddress::DbAddressPathByFile>& DbAddressPath;
+
+    QCryptographicHash::Algorithm Algorithm;
+
+    QSharedPointer<Cuma::FileBlockStorage::FileFragDir>& FileBlockStorage;
+
 };
 }
 #endif // SERVEREVENTLOOP_H

@@ -1,11 +1,11 @@
 #include "dbaddresspathbyfile.h"
 
-Cuma::Address::DbAddressPathByFile::DbAddressPathByFile (QSqlDatabase DB)
+Cuma::DbAddress::DbAddressPathByFile::DbAddressPathByFile (QSqlDatabase DB)
 {
     AddressDb = DB;
 }
 
-Cuma::Address::DbAddressPathByFile::DbAddressPathByFile()
+Cuma::DbAddress::DbAddressPathByFile::DbAddressPathByFile()
 {
     if (QSqlDatabase::contains("DBAddressPath"))
     {
@@ -49,7 +49,7 @@ Cuma::Address::DbAddressPathByFile::DbAddressPathByFile()
     }
 }
 
-Cuma::Address::DbAddressPathByFile::~DbAddressPathByFile()
+Cuma::DbAddress::DbAddressPathByFile::~DbAddressPathByFile()
 {
     if (AddressDb.isOpen() )
     {
@@ -57,7 +57,7 @@ Cuma::Address::DbAddressPathByFile::~DbAddressPathByFile()
     }
 }
 
-bool Cuma::Address::DbAddressPathByFile::Add(const Cuma::Address::AddressBlock& AddressBlock, const QString& FileName, const QString Pid)
+bool Cuma::DbAddress::DbAddressPathByFile::Add(const Cuma::Address::AddressBlock& AddressBlock, const QString& FileName, const QString Pid)
 {
     if (AddressDb.isOpen() == false)
     {
@@ -89,7 +89,7 @@ bool Cuma::Address::DbAddressPathByFile::Add(const Cuma::Address::AddressBlock& 
     return true;
 }
 
-bool Cuma::Address::DbAddressPathByFile::RemoveFrom(const QString ip)
+bool Cuma::DbAddress::DbAddressPathByFile::RemoveFrom(const QString ip)
 {
     if (AddressDb.isOpen() == false)
     {
@@ -116,7 +116,7 @@ bool Cuma::Address::DbAddressPathByFile::RemoveFrom(const QString ip)
     return true;
 }
 
-bool Cuma::Address::DbAddressPathByFile::RemoveTo(const QString ip)
+bool Cuma::DbAddress::DbAddressPathByFile::RemoveTo(const QString ip)
 {
     if (AddressDb.isOpen() == false)
     {
@@ -143,7 +143,7 @@ bool Cuma::Address::DbAddressPathByFile::RemoveTo(const QString ip)
     return true;
 }
 
-bool Cuma::Address::DbAddressPathByFile::RemoveFromFileAddress(const QString FileName, const QString Pid)
+bool Cuma::DbAddress::DbAddressPathByFile::RemoveFromFileAddress(const QString FileName, const QString Pid)
 {
     if (AddressDb.isOpen() == false)
     {
@@ -171,7 +171,7 @@ bool Cuma::Address::DbAddressPathByFile::RemoveFromFileAddress(const QString Fil
     return true;
 }
 
-Cuma::Address::AddressBlock Cuma::Address::DbAddressPathByFile::GetAddress(const QString FileName, const QString Pid)
+Cuma::Address::AddressBlock Cuma::DbAddress::DbAddressPathByFile::GetAddress(const QString FileName, const QString Pid)
 {
 
     try
@@ -221,7 +221,7 @@ Cuma::Address::AddressBlock Cuma::Address::DbAddressPathByFile::GetAddress(const
     }
 }
 
-QVector<Cuma::Address::AddressBlock> Cuma::Address::DbAddressPathByFile::GetAddress(QString FileName)
+QVector<Cuma::Address::AddressBlock> Cuma::DbAddress::DbAddressPathByFile::GetAddress(QString FileName)
 {
     try
     {
@@ -274,12 +274,17 @@ QVector<Cuma::Address::AddressBlock> Cuma::Address::DbAddressPathByFile::GetAddr
     }
 }
 
-QString Cuma::Address::DbAddressPathByFile::GetErrorString()
+QString Cuma::DbAddress::DbAddressPathByFile::GetErrorString()
 {
     return ErrorString;
 }
 
-QSqlError Cuma::Address::DbAddressPathByFile::GetError()
+QSqlError Cuma::DbAddress::DbAddressPathByFile::GetError()
 {
     return Error;
+}
+
+bool Cuma::DbAddress::DbAddressPathByFile::isError()
+{
+    return Error.type() != QSqlError::NoError;
 }

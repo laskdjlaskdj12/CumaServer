@@ -1,10 +1,16 @@
 #include "clienthandler.h"
 
 Cuma::ClientHandler::ClientHandler(QSharedPointer<QtJsonSocketLib_v3> client,
-                                   QSharedPointer<Cuma::NetworkConfig::ServerList> ServerList):
+                                   QSharedPointer<Cuma::NetworkConfig::ServerList> ServerList,
+                                   QSharedPointer<Cuma::DbAddress::DbAddressPathByFile>& DbAddressPath,
+                                   QSharedPointer<Cuma::FileBlockStorage::FileFragDir>& FileStorage,
+                                   QCryptographicHash::Algorithm Algorithm):
     Client(client),
     ServerList(ServerList),
-    IsBypassBrockerActive(false)
+    IsBypassBrockerActive(false),
+    DbAddressPath(DbAddressPath),
+    Algorithm(Algorithm),
+    FileBlockStorage(FileStorage)
 {
 
 }
@@ -12,6 +18,67 @@ Cuma::ClientHandler::ClientHandler(QSharedPointer<QtJsonSocketLib_v3> client,
 Cuma::ClientHandler::~ClientHandler()
 {
 
+}
+
+void Cuma::ClientHandler::ReplyFailControl(const Cuma::Protocol::CumaProtocolBlock& RecvBlock, const QString& str)
+{
+    Cuma::Protocol::CumaProtocolBlock ErrorProtocolBlock;
+    ErrorProtocolBlock = RecvBlock;
+    ErrorProtocolBlock.Address.To = RecvBlock.Address.From;
+    ErrorProtocolBlock.Address.From = RecvBlock.Address.To;
+
+    QJsonObject ErrorData;
+    ErrorData["Error"] = str;
+    ErrorProtocolBlock.Data = QJsonDocument(ErrorData).toJson();
+
+    SendBlock(Client, ErrorProtocolBlock);
+}
+
+void Cuma::ClientHandler::ReplyControl(Cuma::Protocol::CumaProtocolBlock RecvProtocol)
+{
+    switch (RecvProtocol.ProtocolType)
+    {
+        case Cuma::Protocol::Type::Connect:
+        {
+            ConnectHandler(RecvProtocol);
+        }
+        break;
+
+        case Cuma::Protocol::Type::Download:
+        {
+
+        } break;
+
+        case Cuma::Protocol::Type::Spread:
+        {
+            SpreadHandler Handler(DbAddressPath,
+                                  Algorithm,
+                                  FileBlockStorage,
+                                  RecvProtocol);
+            if (Handler.IsSuccess() == false)
+            {
+                throw "파일 저장 실패";
+            }
+
+            Handler.GetFileBlockToSpread();
+        }
+        break;
+
+        case Cuma::Protocol::Type::Search:
+        {
+
+        } break;
+
+        case Cuma::Protocol::Type::Ping:
+        {
+
+        } break;
+
+        case Cuma::Protocol::Type::Disconnect:
+        {
+
+        } break;
+    }
 }
 
 void Cuma::ClientHandler::Start()
@@ -36,6 +103,7 @@ void Cuma::ClientHandler::Stop()
         disconnect(Client.data(), SIGNAL(OnRecvEvent()), this, SLOT(OnRecv()));
     }
 }
+
 
 void Cuma::ClientHandler::OnRecv()
 {
@@ -73,11 +141,14 @@ void Cuma::ClientHandler::OnRecv()
     //Reply하는 클래스
     else
     {
-        ConnectHandler(RecvProtocol);
-
-        Client->disconnect_socket();
-
-        emit DisconnectClient(true);
+        try
+        {
+            ReplyControl(RecvProtocol);
+        }
+        catch (const QString& str)
+        {
+            ReplyFailControl(RecvProtocol, str);
+        }
     }
 }
 

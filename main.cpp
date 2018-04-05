@@ -1,12 +1,12 @@
 #include <QCoreApplication>
 #include <QTest>
-#include "servertest.h"
+#include "Test/serverspreadtest.h"
 
 int main(int argc, char* argv[])
 {
     QCoreApplication a(argc, argv);
 
-    ServerTest test;
+    ServerSpreadTest test;
     QTest::qExec(&test);
 
     return a.exec();
