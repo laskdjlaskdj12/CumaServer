@@ -57,5 +57,6 @@ HEADERS += \
     FileBlockStorage/filefrag.h \
     serverspreadtest.h \
     Test/serverspreadtest.h \
-    Test/servertest.h
+    Test/servertest.h \
+    Test/spreadhandletest.h
 
