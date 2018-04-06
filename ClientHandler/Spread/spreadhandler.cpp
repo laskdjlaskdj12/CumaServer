@@ -14,15 +14,26 @@ SpreadHandler::SpreadHandler(QSharedPointer<Cuma::DbAddress::DbAddressPathByFile
 
         QByteArray FileBlockHash = QCryptographicHash::hash(RecvFileBlock.FileSource, hashType);
 
+        Cuma::Address::AddressBlock FileBlockSenderAddress = DbPath->GetAddress(RecvFileBlock.FileName, QCryptographicHash::hash(RecvFileBlock.FileSource, hashType));
+
+        if (FileBlockSenderAddress.From.IP.isEmpty() == false)
+        {
+            IsSaved = true;
+            ReadySpreadFileBlock.FileName = "Exsist";
+            return;
+        }
+
         if (DbPath->Add(FileBlockProtocol.Address, RecvFileBlock.FileName, FileBlockHash) == false)
         {
+            ERRLOG("파일의 정보를 저장할수 없습니다.");
             throw ("파일의 정보를 저장할수 없습니다.");
         }
 
         //파일을 블록에 저장함
         if (FileBlockStorage->SaveFileBlock(RecvFileBlock) == false)
         {
-            throw ("파일을 저장할수없습니다.");
+            ERRLOG("파일 소스를 저장할수없습니다.");
+            throw ("파일소스를 저장할수없습니다.");
         }
 
         //파일블록을 다른 서버에 퍼트리는 역활을 함
@@ -30,7 +41,7 @@ SpreadHandler::SpreadHandler(QSharedPointer<Cuma::DbAddress::DbAddressPathByFile
 
         ReadySpreadFileBlock = RecvFileBlock;
     }
-    catch (const QString& String)
+    catch (const QString String)
     {
         ERRLOG(String);
         IsSaved = false;

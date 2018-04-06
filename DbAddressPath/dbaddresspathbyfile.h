@@ -17,7 +17,6 @@
 #include <QDebug>
 
 #include "Block/AddressBlock/addressblock.h"
-#include "Block/FileBlock/blockstruct.h"
 
 namespace Cuma
 {
@@ -55,7 +54,9 @@ public:
 
 protected:
     QSqlDatabase AddressDb;
+
     QString ErrorString;
+
     QSqlError Error;
 
 };

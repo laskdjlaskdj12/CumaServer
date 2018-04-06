@@ -34,6 +34,7 @@ bool Cuma::FileBlockStorage::FileFragDir::SaveFileBlock(Cuma::FileBlock::FileBlo
 
     if (FileObj.isOpen() == false)
     {
+        qDebug() << " 파일 오픈을 실패했습니다. : Reason : " + FileObj.errorString();
         ErrorStr = FileObj.errorString();
         FileObj.close();
         return false;
@@ -67,14 +68,36 @@ Cuma::FileBlock::FileBlock Cuma::FileBlockStorage::FileFragDir::GetFileBlock(QSt
 {
     Cuma::FileBlock::FileBlock RetBlock;
 
-    QString FilePath = RootDir + "/" + FileName + QString::number(index) + ".Cuma";
+    QString FILENAME = FileName + QString::number(index) + ".Cuma";
+    QString FILENAMEPATH = RootDir + "/" + FILENAME;
+
+    QDir dir;
+    dir.setPath(RootDir);
+
+    QStringList EntityList = dir.entryList();
+
+    for (int i = 0; i < EntityList.count(); i++)
+    {
+        QString EntityFileName = EntityList.at(i);
+
+        if (EntityFileName == FILENAME)
+        {
+            RetBlock.FileName = FileName;
+            break;
+        }
+    }
+
+    if (RetBlock.FileName.isEmpty())
+    {
+        return RetBlock;
+    }
 
     if (FileObj.isOpen())
     {
         FileObj.close();
     }
 
-    FileObj.setFileName(FilePath);
+    FileObj.setFileName(FILENAMEPATH);
     FileObj.open(QFile::ReadOnly);
 
     if (FileObj.isOpen() == false)
@@ -87,6 +110,7 @@ Cuma::FileBlock::FileBlock Cuma::FileBlockStorage::FileFragDir::GetFileBlock(QSt
     RetBlock.FileName = FileName;
     RetBlock.FileSource = FileObj.readAll();
     RetBlock.Index = index;
+    RetBlock.FileSize = RetBlock.FileSource.size();
 
     FileObj.close();
     return RetBlock;
@@ -147,6 +171,7 @@ Cuma::FileBlock::FileBlock Cuma::FileBlockStorage::FileFragDir::GetFileBlock(QSt
     RetBlock.FileName = TempFileName;
     RetBlock.FileSource = FileObj.readAll();
     RetBlock.Index = TempIndex;
+    RetBlock.FileSize = RetBlock.FileSource.size();
 
     FileObj.close();
     return RetBlock;

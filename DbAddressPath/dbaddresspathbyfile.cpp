@@ -7,15 +7,8 @@ Cuma::DbAddress::DbAddressPathByFile::DbAddressPathByFile (QSqlDatabase DB)
 
 Cuma::DbAddress::DbAddressPathByFile::DbAddressPathByFile()
 {
-    if (QSqlDatabase::contains("DBAddressPath"))
-    {
-        AddressDb = QSqlDatabase::database("DBAddressPath");
-    }
-    else
-    {
-        AddressDb = QSqlDatabase::addDatabase("QSQLITE", "DBAddressPath");
-        AddressDb.setDatabaseName("DBAddressPath.db");
-    }
+    AddressDb = QSqlDatabase::addDatabase("QSQLITE", "DBAddressPath");
+    AddressDb.setDatabaseName("DBAddressPath.db");
 
     if (AddressDb.open() == false)
     {
@@ -37,11 +30,16 @@ Cuma::DbAddress::DbAddressPathByFile::DbAddressPathByFile()
     }
 
     QSqlQuery query = AddressDb.exec("CREATE TABLE `FileFragAddress` ("
+                                     "`FromIP`	TEXT,"
+                                     "`FromPort`	INTEGER,"
+                                     "`ToIp`	TEXT,"
+                                     "`ToPort`	INTEGER,"
+                                     "`Direction`	NUMERIC,"
+                                     "`BypassArray`	TEXT,"
+                                     "`PathCount`	INTEGER,"
                                      "`FileName`	TEXT,"
-                                     "`From`	TEXT,"
-                                     "`To`	TEXT,"
-                                     "`BypassCount`	INTEGER,"
-                                     "`FileBlockPid`	TEXT)");
+                                     "`Pid`	TEXT NOT NULL,"
+                                     "PRIMARY KEY(`Pid`));");
 
     if (query.isActive() == false)
     {
@@ -69,14 +67,18 @@ bool Cuma::DbAddress::DbAddressPathByFile::Add(const Cuma::Address::AddressBlock
 
     QSqlQuery query(AddressDb);
 
-    query.prepare("INSERT INTO `FileFragAddress`(`FileName`,`From`,`To`,`BypassCount`,`FileBlockPid`)"
+    query.prepare("INSERT INTO `FileFragAddress`(`FromIP`, `FromPort`, `ToIp`, `ToPort`, `Direction`, `BypassArray`, `PathCount`, `FileName`, `Pid`, )"
                   " VALUES (:FileName , :From , :To , :Bypasscount , :FileBlockPid);");
 
-    query.bindValue(":FileName", FileName);
-    query.bindValue(":From", AddressBlock.From.IP );
-    query.bindValue(":To", AddressBlock.To.IP );
-    query.bindValue(":Bypasscount", QString::number(AddressBlock.PathCount));
-    query.bindValue(":FileBlockPid", Pid);
+    query.bindValue(":FromIP", AddressBlock.From.IP );
+    query.bindValue(":FromPort", AddressBlock.From.IP );
+    query.bindValue(":ToIp", AddressBlock.From.IP );
+    query.bindValue(":ToPort", AddressBlock.From.IP );
+    query.bindValue(":Direction", AddressBlock.From.IP );
+    query.bindValue(":FromPort", AddressBlock.From.IP );
+    query.bindValue(":FromPort", AddressBlock.From.IP );
+    query.bindValue(":FromPort", AddressBlock.From.IP );
+
 
     if (query.exec() == false)
     {
@@ -286,5 +288,5 @@ QSqlError Cuma::DbAddress::DbAddressPathByFile::GetError()
 
 bool Cuma::DbAddress::DbAddressPathByFile::isError()
 {
-    return Error.type() != QSqlError::NoError;
+    return (Error.type() != QSqlError::NoError);
 }
