@@ -80,6 +80,26 @@ typedef struct AddressBlock
 
 } AddressBlock;
 
+static AddressBlock ChangeAddressDirection(AddressBlock Address)
+{
+    AddressBlock ReturnAddress;
+    ReturnAddress.BypassArray = Address.BypassArray;
+    ReturnAddress.From = Address.To;
+    ReturnAddress.To = Address.From;
+    ReturnAddress.PathCount = Address.PathCount;
+
+    if (Address.Direction == Cuma::Address::BypassDirection::Req)
+    {
+        ReturnAddress.Direction = Cuma::Address::BypassDirection::Rply;
+    }
+    else
+    {
+        ReturnAddress.Direction = Cuma::Address::BypassDirection::Req;
+    }
+
+    return ReturnAddress;
+}
+
 class Serlize: QObject
 {
     Q_OBJECT

@@ -93,7 +93,7 @@ protected:
         return ReturnBlock;
     }
 
-    Cuma::Protocol::CumaProtocolBlock makeFileSaveRequest()
+    Cuma::Protocol::CumaProtocolBlock makeFileSpreadRequest()
     {
         Cuma::FileBlock::FileBlock RequestSaveBlock;
 
@@ -130,11 +130,14 @@ private slots:
         QSharedPointer<TestClient> Client = QSharedPointer<TestClient>::create();
         StartClientThread(Client, ClientThread);
 
+        //클라이언트에서 수신 체크할 시그널
         QSignalSpy ClientRecvSignal(Client.data(), &TestClient::Complete);
 
+        //파일 블록이 어디에서 다운로드받은 Db를 구성
         QSharedPointer<Cuma::DbAddress::DbAddressPathByFile> DbAddress = QSharedPointer<Cuma::DbAddress::DbAddressPathByFile>::create();
         QVERIFY2(DbAddress->isError(), DbAddress->GetErrorString().toStdString().c_str());
 
+        //FileBlock을 저장할 스토리지
         QSharedPointer<Cuma::FileBlockStorage::FileFragDir> FileBlockStorage = QSharedPointer<Cuma::FileBlockStorage::FileFragDir>::create();
 
         QSharedPointer<QThread> ServerThread = QSharedPointer<QThread>::create();
@@ -144,8 +147,8 @@ private slots:
                                               FileBlockStorage);
         StartServerThread(Server, ServerThread);
 
-        //클라이언트의 Connection을 요청
-        emit SendProtocol("127.0.0.1", 7071, makeFileSaveRequest());
+        //클라이언트에게 Spread를 요청
+        emit SendProtocol("127.0.0.1", 7071, makeFileSpreadRequest());
 
         QVERIFY (ClientRecvSignal.wait(5000) == true);
 
@@ -154,6 +157,5 @@ private slots:
     }
 
 };
-
 
 #endif // SERVERSPREADTEST_H

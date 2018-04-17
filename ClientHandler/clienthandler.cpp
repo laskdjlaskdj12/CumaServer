@@ -40,6 +40,7 @@ void Cuma::ClientHandler::ReplyControl(Cuma::Protocol::CumaProtocolBlock RecvPro
     {
         case Cuma::Protocol::Type::Connect:
         {
+            DEBUGLOG("Connect 프로토콜");
             ConnectHandler(RecvProtocol);
         }
         break;
@@ -51,22 +52,41 @@ void Cuma::ClientHandler::ReplyControl(Cuma::Protocol::CumaProtocolBlock RecvPro
 
         case Cuma::Protocol::Type::Spread:
         {
+            DEBUGLOG("Spread 프로토콜");
+
+            Cuma::Protocol::CumaProtocolBlock ReplySuccessBlock;
+
             SpreadHandler Handler(DbAddressPath,
                                   Algorithm,
                                   FileBlockStorage,
                                   RecvProtocol);
+
             if (Handler.IsSuccess() == false)
             {
-                throw "파일 저장 실패";
+                DEBUGLOG("파일 저장 실패");
+
+                ReplySuccessBlock = SpreadHandler::MakeReplyFail(RecvProtocol, "Fail Save FileBlock");
             }
 
-            Handler.GetFileBlockToSpread();
+            else
+            {
+                Cuma::FileBlock::FileBlock ReadyToSpreadFileBlock = Handler.GetFileBlockToSpread();
+
+                ReplySuccessBlock = SpreadHandler::MakeReplySuccess(RecvProtocol);
+            }
+
+            //클라이언트들에게 전송함
+            SendBlock(Client, ReplySuccessBlock);
         }
         break;
 
         case Cuma::Protocol::Type::Search:
         {
+            //            DEBUGLOG("Search 프로토콜");
 
+            //            Cuma::FileBlock::FileFragInfo GetFileFrag = SearchHandler Handler(::FindFileFragInfo(RecvProtocol);
+
+            //            if(GetFileFrag)
         } break;
 
         case Cuma::Protocol::Type::Ping:
@@ -138,17 +158,11 @@ void Cuma::ClientHandler::OnRecv()
         SendConnectResult(Client, RecvProtocol);
     }
 
-    //Reply하는 클래스
+    //바이패스가 아닌 Reply하는 클래스
     else
     {
-        try
-        {
-            ReplyControl(RecvProtocol);
-        }
-        catch (const QString& str)
-        {
-            ReplyFailControl(RecvProtocol, str);
-        }
+        DEBUGLOG("바이패스가 아닌 프로토콜을 수신 ");
+        ReplyControl(RecvProtocol);
     }
 }
 

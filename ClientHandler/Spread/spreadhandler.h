@@ -28,6 +28,10 @@ public:
 
     Cuma::FileBlock::FileBlock GetFileBlockToSpread();
 
+    static Cuma::Protocol::CumaProtocolBlock MakeReplyFail(const Cuma::Protocol::CumaProtocolBlock& block, const QString ErrorMessage);
+
+    static Cuma::Protocol::CumaProtocolBlock MakeReplySuccess(const Cuma::Protocol::CumaProtocolBlock& block);
+
 protected:
     bool IsSaved;
 

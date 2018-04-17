@@ -86,7 +86,7 @@ public slots:
         }
     }
 
-    inline void RecvBypassByOnece(const Cuma::Protocol::CumaProtocolBlock Block)
+    inline void RecvNoBypass(const Cuma::Protocol::CumaProtocolBlock Block)
     {
         QJsonObject RecvJson = Socket->RecvJson();
 
@@ -96,6 +96,10 @@ public slots:
         }
 
         DEBUGLOG (QJsonDocument(RecvJson).toJson());
+
+        Cuma::Protocol::CumaProtocolBlock RecvBlock = Cuma::Protocol::Serlize::DeSerlizeProtocol(RecvJson);
+
+        DEBUGLOG (RecvBlock.Data);
     }
 
     inline void SendRequest(const QString ip, const unsigned int port, const Cuma::Protocol::CumaProtocolBlock Block)
@@ -116,22 +120,18 @@ public slots:
             SendBlock(Block);
 
             DEBUGLOG("클라이언트에서 전송을 했습니다.");
-            //만약 Bypass일경우
-            switch (Block.ProtocolType)
+
+            //프로토콜이 Bypass일경우
+            if (Block.ProtocolType == Cuma::Protocol::Bypass)
             {
-                case Cuma::Protocol::Bypass :
-                {
-                    RecvBypassByPathCount(Block);
-                }
-                break;
-
-                case Cuma::Protocol::Connect :
-                {
-                    RecvBypassByOnece(Block);
-                }
-                break;
-
+                RecvBypassByPathCount(Block);
             }
+
+            else
+            {
+                RecvNoBypass(Block);
+            }
+
             emit Complete(true);
         }
 

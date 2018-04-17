@@ -28,7 +28,8 @@ SOURCES += \
     server.cpp \
     ClientHandler/Spread/spreadhandler.cpp \
     DbAddressPath/dbaddresspathbyfile.cpp \
-    FileBlockStorage/filefrag.cpp
+    FileBlockStorage/filefrag.cpp \
+    ClientHandler/Search/searchhandler.cpp
 
 SUBDIRS += \
     Server.pro
@@ -58,5 +59,7 @@ HEADERS += \
     serverspreadtest.h \
     Test/serverspreadtest.h \
     Test/servertest.h \
-    Test/spreadhandletest.h
+    Test/spreadhandletest.h \
+    Test/dbaddresstest.h \
+    ClientHandler/Search/searchhandler.h
 

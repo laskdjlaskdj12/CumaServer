@@ -17,9 +17,8 @@ Cuma::DbAddress::DbAddressPathByFile::DbAddressPathByFile()
         return;
     }
 
-    /*
-     * 테이블이 있는지 체크
-     * */
+    //테이블이 있는지 체크
+
     QSqlQuery CheckTableQuery = AddressDb.exec("SELECT tbl_name AS temp FROM sqlite_master");
 
     CheckTableQuery.next();
@@ -67,18 +66,18 @@ bool Cuma::DbAddress::DbAddressPathByFile::Add(const Cuma::Address::AddressBlock
 
     QSqlQuery query(AddressDb);
 
-    query.prepare("INSERT INTO `FileFragAddress`(`FromIP`, `FromPort`, `ToIp`, `ToPort`, `Direction`, `BypassArray`, `PathCount`, `FileName`, `Pid`, )"
-                  " VALUES (:FileName , :From , :To , :Bypasscount , :FileBlockPid);");
+    query.prepare("INSERT INTO `FileFragAddress`(`FromIP`, `FromPort`, `ToIp`, `ToPort`, `Direction`, `BypassArray`, `PathCount`, `FileName`, `Pid`)"
+                  " VALUES (:FromIP , :FromPort , :ToIp , :ToPort , :Direction , :BypassArray , :PathCount , :FileName , :Pid);");
 
     query.bindValue(":FromIP", AddressBlock.From.IP );
-    query.bindValue(":FromPort", AddressBlock.From.IP );
-    query.bindValue(":ToIp", AddressBlock.From.IP );
-    query.bindValue(":ToPort", AddressBlock.From.IP );
-    query.bindValue(":Direction", AddressBlock.From.IP );
-    query.bindValue(":FromPort", AddressBlock.From.IP );
-    query.bindValue(":FromPort", AddressBlock.From.IP );
-    query.bindValue(":FromPort", AddressBlock.From.IP );
-
+    query.bindValue(":FromPort", AddressBlock.From.Port );
+    query.bindValue(":ToIp", AddressBlock.To.IP );
+    query.bindValue(":ToPort", AddressBlock.To.Port);
+    query.bindValue(":Direction", AddressBlock.Direction );
+    query.bindValue(":BypassArray", QJsonDocument(AddressBlock.BypassArray).toJson() );
+    query.bindValue(":PathCount", AddressBlock.PathCount);
+    query.bindValue(":FileName", FileName);
+    query.bindValue(":Pid", Pid);
 
     if (query.exec() == false)
     {
@@ -103,7 +102,7 @@ bool Cuma::DbAddress::DbAddressPathByFile::RemoveFrom(const QString ip)
 
     QSqlQuery query(AddressDb);
 
-    query.prepare("DELETE FROM `FileFragAddress` WHERE `From` = (:ip) ");
+    query.prepare("DELETE FROM `FileFragAddress` WHERE `FromIP` = (:ip) ");
 
     query.bindValue(":ip", ip);
 
@@ -130,7 +129,7 @@ bool Cuma::DbAddress::DbAddressPathByFile::RemoveTo(const QString ip)
 
     QSqlQuery query(AddressDb);
 
-    query.prepare("DELETE FROM `FileFragAddress` WHERE `To` = (:ip) ");
+    query.prepare("DELETE FROM `FileFragAddress` WHERE `ToIP` = (:ip) ");
 
     query.bindValue(":ip", ip);
 
@@ -157,7 +156,7 @@ bool Cuma::DbAddress::DbAddressPathByFile::RemoveFromFileAddress(const QString F
 
     QSqlQuery query(AddressDb);
 
-    query.prepare("DELETE FROM `FileFragAddress` WHERE `FileName` = (:FileName) AND `FileBlockPid` = (:FileBlockPid) ");
+    query.prepare("DELETE FROM `FileFragAddress` WHERE `FileName` = (:FileName) AND `Pid` = (:FileBlockPid) ");
 
     query.bindValue(":FileName", FileName);
     query.bindValue(":FileBlockPid", Pid);
@@ -178,18 +177,15 @@ Cuma::Address::AddressBlock Cuma::DbAddress::DbAddressPathByFile::GetAddress(con
 
     try
     {
-
         if (AddressDb.isOpen() == false)
         {
             qDebug() << "[Error] : Init QSqlDatabase is not set";
-            Error = AddressDb.lastError();
-            ErrorString = "AddressDb is not open : " + AddressDb.lastError().text();
-            throw false;
+            throw AddressDb.lastError();
         }
 
         QSqlQuery query(AddressDb);
 
-        query.prepare("SELECT * FROM `FileFragAddress` WHERE `FileName` = (:FileName) AND `FileBlockPid` = (:FileBlockPid) ");
+        query.prepare("SELECT * FROM `FileFragAddress` WHERE `FileName` = (:FileName) AND `Pid` = (:FileBlockPid) ");
 
         query.bindValue(":FileName", FileName);
         query.bindValue(":FileBlockPid", Pid);
@@ -199,25 +195,28 @@ Cuma::Address::AddressBlock Cuma::DbAddress::DbAddressPathByFile::GetAddress(con
             qDebug() << "[Error] : Add Query is fail";
             Error = AddressDb.lastError();
             ErrorString = "Add Query is fail: " + query.lastError().text();
-            throw false;
+            throw AddressDb.lastError();
         }
 
-        int FromIndex = query.record().indexOf("From");
-        int ToIndex = query.record().indexOf("To");
-        int BypassCountIndex = query.record().indexOf("BypassCount");
         query.next();
 
         Cuma::Address::AddressBlock RetBlock;
 
-        RetBlock.From.IP = query.value(FromIndex).toString();
-        RetBlock.To.IP = query.value(ToIndex).toString();
-        RetBlock.PathCount = query.value(BypassCountIndex).toInt();
-        return RetBlock;
+        RetBlock.From.IP = query.value(0).toString();
+        RetBlock.From.Port = query.value(1).toInt();
+        RetBlock.To.IP = query.value(2).toString();
+        RetBlock.To.Port = query.value(3).toInt();
+        RetBlock.Direction = Cuma::Address::BypassDirection(query.value(4).toInt());
+        RetBlock.BypassArray = QJsonDocument::fromJson(query.value(5).toString().toUtf8()).array();
+        RetBlock.PathCount = query.value(6).toInt();
 
+        return RetBlock;
     }
 
-    catch (bool& b)
+    catch (const QSqlError& e)
     {
+        qDebug() << "Error of Sql : " + e.text();
+
         Cuma::Address::AddressBlock EmptyBlock;
         return EmptyBlock;
     }
@@ -225,9 +224,10 @@ Cuma::Address::AddressBlock Cuma::DbAddress::DbAddressPathByFile::GetAddress(con
 
 QVector<Cuma::Address::AddressBlock> Cuma::DbAddress::DbAddressPathByFile::GetAddress(QString FileName)
 {
+    QVector<Cuma::Address::AddressBlock> RetBlockList;
+
     try
     {
-
         if (AddressDb.isOpen() == false)
         {
             qDebug() << "[Error] : Init QSqlDatabase is not set";
@@ -250,29 +250,23 @@ QVector<Cuma::Address::AddressBlock> Cuma::DbAddress::DbAddressPathByFile::GetAd
             throw false;
         }
 
-        int FromIndex = query.record().indexOf("From");
-        int ToIndex = query.record().indexOf("To");
-        int BypassCountIndex = query.record().indexOf("BypassCount");
-
-        QVector<Cuma::Address::AddressBlock> RetBlocks;
-
         while (query.next())
         {
             Cuma::Address::AddressBlock RetBlock;
-            RetBlock.From.IP = query.value(FromIndex).toString();
-            RetBlock.To.IP = query.value(ToIndex).toString();
-            RetBlock.PathCount = query.value(BypassCountIndex).toInt();
-            RetBlocks.append(RetBlock);
-
+            RetBlock.From.IP = query.value(0).toString();
+            RetBlock.From.Port = query.value(1).toInt();
+            RetBlock.To.IP = query.value(2).toString();
+            RetBlock.To.Port = query.value(3).toInt();
+            RetBlock.Direction = (Cuma::Address::BypassDirection(query.value(4).toInt()));
+            RetBlock.BypassArray = (QJsonDocument::fromJson(query.value(5).toString().toUtf8()).array());
+            RetBlock.PathCount = query.value(6).toInt();
+            RetBlockList.append(RetBlock);
         }
-
-        return RetBlocks;
-
+        return RetBlockList;
     }
     catch (bool& b)
     {
-        QVector<Cuma::Address::AddressBlock>  EmptyBlock;
-        return EmptyBlock;
+        return RetBlockList;
     }
 }
 

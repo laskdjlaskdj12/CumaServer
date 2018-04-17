@@ -7,12 +7,9 @@
 #include <QThreadPool>
 #include <QThread>
 #include <QHostAddress>
-
 #include <QJsonObject>
 #include <QJsonDocument>
-
 #include <QObject>
-
 #include <QTimer>
 
 #include "ServerList/serverlist.h"
@@ -22,12 +19,13 @@
 #include "Protocol/protocol.h"
 #include "Block/AddressBlock/addressblock.h"
 #include "Type/ServerError/errorblock.h"
-#include "Log/errorlog.h"
-#include "Log/debuglog.h"
 #include "BypassHandler/bypasshandler.h"
 
 //Spread 클래스
 #include "ClientHandler/Spread/spreadhandler.h"
+
+//Search 클래스
+#include "ClientHandler/Search/searchhandler.h"
 
 namespace Cuma
 {
