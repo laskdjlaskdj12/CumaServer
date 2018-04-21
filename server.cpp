@@ -2,10 +2,12 @@
 
 Cuma::Server::Server(unsigned int Port,
                      QSharedPointer<Cuma::NetworkConfig::ServerList>& list,
+                     QSharedPointer<Cuma::DbFileFrag::DbFileFragInfo>& info,
                      QSharedPointer<Cuma::DbAddress::DbAddressPathByFile>& DbAddressByFile,
                      QSharedPointer<Cuma::FileBlockStorage::FileFragDir>& FileStorage):
     ServerList(list),
     port(Port),
+    DbFileFragInfo(info),
     DbAddressByFile(DbAddressByFile),
     FileBlockStorage(FileStorage)
 {
@@ -33,6 +35,7 @@ void Cuma::Server::OnConnect()
     QSharedPointer<Cuma::ClientHandler> Handler = QSharedPointer<Cuma::ClientHandler>::create(JsonSocket,
             ServerList,
             DbAddressByFile,
+            DbFileFragInfo,
             FileBlockStorage,
             QCryptographicHash::Sha3_512);
 

@@ -21,6 +21,8 @@
 #include "Type/ServerError/errorblock.h"
 #include "BypassHandler/bypasshandler.h"
 
+#include "DbFileFragInfo/dbcache.h"
+
 //Spread 클래스
 #include "ClientHandler/Spread/spreadhandler.h"
 
@@ -38,6 +40,7 @@ public:
     ClientHandler(QSharedPointer<QtJsonSocketLib_v3> client,
                   QSharedPointer<Cuma::NetworkConfig::ServerList> ServerList,
                   QSharedPointer<Cuma::DbAddress::DbAddressPathByFile>& DbAddressPath,
+                  QSharedPointer<Cuma::DbFileFrag::DbFileFragInfo>& DbFileFragInfo,
                   QSharedPointer<Cuma::FileBlockStorage::FileFragDir>& FileStorage,
                   QCryptographicHash::Algorithm Algorithm);
 
@@ -101,6 +104,8 @@ private:
      * ConnectHandler 에서 사용한 Dependency
      * */
     QSharedPointer<Cuma::DbAddress::DbAddressPathByFile>& DbAddressPath;
+
+    QSharedPointer<Cuma::DbFileFrag::DbFileFragInfo>& DbFileFragInfo;
 
     QCryptographicHash::Algorithm Algorithm;
 

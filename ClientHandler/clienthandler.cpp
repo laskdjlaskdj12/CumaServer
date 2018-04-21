@@ -3,11 +3,13 @@
 Cuma::ClientHandler::ClientHandler(QSharedPointer<QtJsonSocketLib_v3> client,
                                    QSharedPointer<Cuma::NetworkConfig::ServerList> ServerList,
                                    QSharedPointer<Cuma::DbAddress::DbAddressPathByFile>& DbAddressPath,
+                                   QSharedPointer<Cuma::DbFileFrag::DbFileFragInfo>& DbFileFragInfo,
                                    QSharedPointer<Cuma::FileBlockStorage::FileFragDir>& FileStorage,
                                    QCryptographicHash::Algorithm Algorithm):
     Client(client),
     ServerList(ServerList),
     IsBypassBrockerActive(false),
+    DbFileFragInfo(DbFileFragInfo),
     DbAddressPath(DbAddressPath),
     Algorithm(Algorithm),
     FileBlockStorage(FileStorage)
@@ -54,7 +56,7 @@ void Cuma::ClientHandler::ReplyControl(Cuma::Protocol::CumaProtocolBlock RecvPro
         {
             DEBUGLOG("Spread 프로토콜");
 
-            Cuma::Protocol::CumaProtocolBlock ReplySuccessBlock;
+            Cuma::Protocol::CumaProtocolBlock ReplySpreadBlock;
 
             SpreadHandler Handler(DbAddressPath,
                                   Algorithm,
@@ -63,31 +65,48 @@ void Cuma::ClientHandler::ReplyControl(Cuma::Protocol::CumaProtocolBlock RecvPro
 
             if (Handler.IsSuccess() == false)
             {
-                DEBUGLOG("파일 저장 실패");
 
-                ReplySuccessBlock = SpreadHandler::MakeReplyFail(RecvProtocol, "Fail Save FileBlock");
+                Cuma::FileBlock::FileBlock ReadyToSpreadFileBlock = Handler.GetFileBlockToSpread();
+
+                ReplySpreadBlock = SpreadHandler::MakeReplySuccess(RecvProtocol);
             }
 
             else
             {
-                Cuma::FileBlock::FileBlock ReadyToSpreadFileBlock = Handler.GetFileBlockToSpread();
+                DEBUGLOG("파일 저장 실패");
 
-                ReplySuccessBlock = SpreadHandler::MakeReplySuccess(RecvProtocol);
+                ReplySpreadBlock = SpreadHandler::MakeReplyFail(RecvProtocol, "Fail Save FileBlock");
             }
 
-            //클라이언트들에게 전송함
-            SendBlock(Client, ReplySuccessBlock);
+            //클라이언트들에게 전송
+            SendBlock(Client, ReplySpreadBlock);
         }
         break;
 
         case Cuma::Protocol::Type::Search:
         {
-            //            DEBUGLOG("Search 프로토콜");
+            DEBUGLOG("Search 프로토콜");
 
-            //            Cuma::FileBlock::FileFragInfo GetFileFrag = SearchHandler Handler(::FindFileFragInfo(RecvProtocol);
+            Cuma::Protocol::CumaProtocolBlock ReplySearchBlock;
 
-            //            if(GetFileFrag)
-        } break;
+            SearchHandler Handler(DbFileFragInfo,
+                                  RecvProtocol);
+
+            if (Handler.isFind())
+            {
+                ReplySearchBlock = SearchHandler::MakeReplySuccess(RecvProtocol);
+            }
+            else
+            {
+                DEBUGLOG("파일 찾기 실패");
+
+                ReplySearchBlock = SearchHandler::MakeReplyFail(RecvProtocol);
+            }
+
+            //클라이언트에게 전송
+            SendBlock(Client, ReplySearchBlock);
+        }
+        break;
 
         case Cuma::Protocol::Type::Ping:
         {

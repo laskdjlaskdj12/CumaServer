@@ -140,9 +140,12 @@ private slots:
         //FileBlock을 저장할 스토리지
         QSharedPointer<Cuma::FileBlockStorage::FileFragDir> FileBlockStorage = QSharedPointer<Cuma::FileBlockStorage::FileFragDir>::create();
 
+        QSharedPointer<Cuma::DbFileFrag::DbFileFragInfo> DbFileFragInfo = QSharedPointer<Cuma::DbFileFrag::DbFileFragInfo>::create();
+
         QSharedPointer<QThread> ServerThread = QSharedPointer<QThread>::create();
         QSharedPointer<Cuma::Server> Server = QSharedPointer<Cuma::Server>::create(7071,
                                               TempServerlist,
+                                              DbFileFragInfo,
                                               DbAddress,
                                               FileBlockStorage);
         StartServerThread(Server, ServerThread);

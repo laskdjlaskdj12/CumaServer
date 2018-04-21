@@ -2,16 +2,30 @@
 #define SEARCHHANDLER_H
 
 #include <QObject>
+#include <QJsonObject>
+#include <QJsonDocument>
+
+#include "DbFileFragInfo/dbcache.h"
+#include "Protocol/protocol.h"
+#include "Block/FileBlock/blockstruct.h"
+#include "Block/AddressBlock/addressblock.h"
 
 class SearchHandler : public QObject
 {
     Q_OBJECT
 public:
-    explicit SearchHandler(QObject *parent = nullptr);
+    explicit SearchHandler(QSharedPointer<Cuma::DbFileFrag::DbFileFragInfo>& DbFileFragInfo,
+                           const Cuma::Protocol::CumaProtocolBlock& RequestProtocol);
 
-signals:
+    ~SearchHandler();
 
-public slots:
+    bool isFind();
+
+    static Cuma::Protocol::CumaProtocolBlock MakeReplySuccess(Cuma::Protocol::CumaProtocolBlock block);
+
+    static Cuma::Protocol::CumaProtocolBlock MakeReplyFail(Cuma::Protocol::CumaProtocolBlock block);
+private:
+    bool isFindCache;
 };
 
 #endif // SEARCHHANDLER_H

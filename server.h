@@ -10,7 +10,7 @@
 #include "ServerList/serverlist.h"
 #include "Block/AddressBlock/addressblock.h"
 #include "ClientHandler/clienthandler.h"
-
+#include "DbFileFragInfo/dbcache.h"
 #include "DbAddressPath/dbaddresspathbyfile.h"
 #include "FileBlockStorage/filefrag.h"
 
@@ -23,6 +23,7 @@ class Server : public QObject
 public:
     explicit Server(unsigned int Port,
                     QSharedPointer<Cuma::NetworkConfig::ServerList>& list,
+                    QSharedPointer<Cuma::DbFileFrag::DbFileFragInfo>& info,
                     QSharedPointer<Cuma::DbAddress::DbAddressPathByFile>& DbAddressByFile,
                     QSharedPointer<Cuma::FileBlockStorage::FileFragDir>& FileStorage);
 
@@ -58,6 +59,8 @@ private:
     QSharedPointer<Cuma::DbAddress::DbAddressPathByFile>& DbAddressByFile;
 
     QSharedPointer<Cuma::FileBlockStorage::FileFragDir>& FileBlockStorage;
+
+    QSharedPointer<Cuma::DbFileFrag::DbFileFragInfo>& DbFileFragInfo;
 
 };
 
