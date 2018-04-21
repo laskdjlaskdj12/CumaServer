@@ -30,7 +30,8 @@ SOURCES += \
     DbAddressPath/dbaddresspathbyfile.cpp \
     FileBlockStorage/filefrag.cpp \
     ClientHandler/Search/searchhandler.cpp \
-    DbFileFragInfo/dbcache.cpp
+    DbFileFragInfo/dbcache.cpp \
+    ClientHandler/Download/downloadhandler.cpp
 SUBDIRS += \
     Server.pro
 
@@ -62,4 +63,5 @@ HEADERS += \
     Test/spreadhandletest.h \
     Test/dbaddresstest.h \
     ClientHandler/Search/searchhandler.h \
-    DbFileFragInfo/dbcache.h
+    DbFileFragInfo/dbcache.h \
+    ClientHandler/Download/downloadhandler.h

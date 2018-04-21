@@ -49,8 +49,48 @@ void Cuma::ClientHandler::ReplyControl(Cuma::Protocol::CumaProtocolBlock RecvPro
 
         case Cuma::Protocol::Type::Download:
         {
+            DEBUGLOG("Download 프로토콜");
 
-        } break;
+            Cuma::Protocol::CumaProtocolBlock ReplyDownloadBlock;
+
+            DownloadHandler Download(DbFileFragInfo,
+                                     FileBlockStorage,
+                                     RecvProtocol);
+
+            if (Download.isSuccess)
+            {
+                QByteArray FilefragSource = Download.FileResource;
+
+                Cuma::FileBlock::FileFragInfo info = Cuma::FileBlock::Serlize::JsonToFileInfo(QJsonDocument::fromJson(RecvProtocol.Data).object());
+                ReplyDownloadBlock = DownloadHandler::MakeReplySuccess(RecvProtocol, FilefragSource, info);
+            }
+
+            else
+            {
+                DEBUGLOG("파일 로드 실패");
+
+                if (Download.isFileNotExsist)
+                {
+                    DEBUGLOG("파일이 존재하지 않습니다.");
+                }
+                else if (Download.isReadFileError)
+                {
+                    DEBUGLOG("파일을 읽는데 실패했습니다.");
+                }
+                else if (Download.isFileParsingError)
+                {
+                    DEBUGLOG("파일 파싱을 하지 못했습니다.");
+                }
+                else if (Download.isReadFileError)
+                {
+                    DEBUGLOG("파일 리소스 읽기에 실패했습니다.");
+                }
+
+                ReplyDownloadBlock = DownloadHandler::MakeReplyFail(RecvProtocol);
+            }
+
+        }
+        break;
 
         case Cuma::Protocol::Type::Spread:
         {

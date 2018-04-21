@@ -29,6 +29,9 @@
 //Search 클래스
 #include "ClientHandler/Search/searchhandler.h"
 
+//Download 클래스
+#include "ClientHandler/Download/downloadhandler.h"
+
 namespace Cuma
 {
 
