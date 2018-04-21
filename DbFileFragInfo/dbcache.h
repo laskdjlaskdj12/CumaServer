@@ -56,6 +56,13 @@ public:
     virtual QUrl SearchFile(Cuma::FileBlock::FileFragInfo block);
 
     /*
+     *  파일 Frag 정보 검색
+     * */
+    virtual Cuma::FileBlock::FileFragInfo SearchFileInfo(QString Pid);
+
+    virtual QVector<Cuma::FileBlock::FileFragInfo> SearchFileInfo(QString FileName, unsigned int FileIndex);
+
+    /*
      * 저장된 파일 블록의 인덱스를 지움
      * */
     virtual bool RemoveFile(QString FileName);

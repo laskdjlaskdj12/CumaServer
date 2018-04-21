@@ -24,8 +24,14 @@ public:
     static Cuma::Protocol::CumaProtocolBlock MakeReplySuccess(Cuma::Protocol::CumaProtocolBlock block);
 
     static Cuma::Protocol::CumaProtocolBlock MakeReplyFail(Cuma::Protocol::CumaProtocolBlock block);
+
+    QVector<Cuma::FileBlock::FileFragInfo> FileFragInfoList;
+
+    Cuma::FileBlock::FileFragInfo FileFragInfo;
+
 private:
     bool isFindCache;
+
 };
 
 #endif // SEARCHHANDLER_H

@@ -225,6 +225,62 @@ QUrl Cuma::DbFileFrag::DbFileFragInfo::SearchFile(Cuma::FileBlock::FileFragInfo 
     return RetUrl;
 }
 
+Cuma::FileBlock::FileFragInfo Cuma::DbFileFrag::DbFileFragInfo::SearchFileInfo(QString Pid)
+{
+    Cuma::FileBlock::FileFragInfo FileUnitInfo;
+
+    QSqlQuery query(db);
+    query.prepare("SELECT * FROM `FileFragCache` WHERE `FileBlockPid` = (:FileBlockPid)");
+
+    query.bindValue(":FileBlockPid", Pid);
+
+    if (query.exec() == false)
+    {
+        ErrorStr = "QSqlQuery exec is fail : " + query.lastError().text();
+        qDebug() << "[Error] : Search " + ErrorStr + " QSqlDB : " + db.lastError().text();
+        return FileUnitInfo;
+    }
+
+    query.next();
+
+    FileUnitInfo.FileName = query.value(0).toString();
+    FileUnitInfo.FilePid = query.value(1).toString();
+    FileUnitInfo.Index = static_cast<unsigned int>(query.value(2).toInt());
+
+    return FileUnitInfo;
+}
+
+QVector<Cuma::FileBlock::FileFragInfo> Cuma::DbFileFrag::DbFileFragInfo::SearchFileInfo(QString FileName, unsigned int FileIndex)
+{
+    QVector<Cuma::FileBlock::FileFragInfo> ReturnFileFragInfoList;
+
+    QSqlQuery query(db);
+    query.prepare("SELECT * FROM `FileFragCache` WHERE `FileName` = (:FileName) AND `FileIndex` = (:FBlockIndex) ");
+
+    query.bindValue(":FBlockIndex", FileIndex);
+    query.bindValue(":FileName", FileName);
+
+    if (query.exec() == false)
+    {
+        ErrorStr = "QSqlQuery exec is fail : " + query.lastError().text();
+        qDebug() << "[Error] : Search " + ErrorStr + " QSqlDB : " + db.lastError().text();
+        return ReturnFileFragInfoList;
+    }
+
+    while (query.next())
+    {
+        Cuma::FileBlock::FileFragInfo FileUnitInfo;
+
+        FileUnitInfo.FileName = query.value(0).toString();
+        FileUnitInfo.FilePid = query.value(1).toString();
+        FileUnitInfo.Index = static_cast<unsigned int>(query.value(2).toInt());
+
+        ReturnFileFragInfoList.append(FileUnitInfo);
+    }
+
+    return ReturnFileFragInfoList;
+}
+
 bool Cuma::DbFileFrag::DbFileFragInfo::RemoveFile(QString FileName)
 {
     if (db.isOpen() == false)

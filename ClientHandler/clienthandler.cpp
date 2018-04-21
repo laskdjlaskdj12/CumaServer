@@ -58,14 +58,14 @@ void Cuma::ClientHandler::ReplyControl(Cuma::Protocol::CumaProtocolBlock RecvPro
 
             Cuma::Protocol::CumaProtocolBlock ReplySpreadBlock;
 
-            SpreadHandler Handler(DbAddressPath,
+            SpreadHandler Handler(DbFileFragInfo,
+                                  DbAddressPath,
                                   Algorithm,
                                   FileBlockStorage,
                                   RecvProtocol);
 
-            if (Handler.IsSuccess() == false)
+            if (Handler.IsSuccess())
             {
-
                 Cuma::FileBlock::FileBlock ReadyToSpreadFileBlock = Handler.GetFileBlockToSpread();
 
                 ReplySpreadBlock = SpreadHandler::MakeReplySuccess(RecvProtocol);

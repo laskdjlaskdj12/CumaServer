@@ -15,6 +15,18 @@ SearchHandler::SearchHandler(QSharedPointer<Cuma::DbFileFrag::DbFileFragInfo>& D
     }
     else
     {
+        //나중에 기능 추가
+        //        //저장되어있는 파일 info를 추출후 전송
+        //        if (ReqSearchFileFragInfo.FilePid.isEmpty() == false)
+        //        {
+        //            FileFragInfo = DbFileFragInfo->SearchFileInfo(ReqSearchFileFragInfo.FilePid);
+        //        }
+
+        //        else
+        //        {
+        //            FileFragInfoList = DbFileFragInfo->SearchFileInfo(ReqSearchFileFragInfo.FileName, ReqSearchFileFragInfo.Index);
+        //        }
+
         isFindCache = true;
     }
 }

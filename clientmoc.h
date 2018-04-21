@@ -52,9 +52,10 @@ public slots:
         }
     }
 
-    void SendBlock(const Cuma::Protocol::CumaProtocolBlock Block)
+    void SendBlock(const Cuma::Protocol::CumaProtocolBlock Block) throw (const QString)
     {
         QJsonObject SendJson = Cuma::Protocol::Serlize::SerlizeProtocol(Block);
+
         if (Socket->send_Json(SendJson) == false)
         {
             throw ("Client : SendJson is Fail");
