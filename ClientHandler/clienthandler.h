@@ -23,13 +23,13 @@
 
 #include "DbFileFragInfo/dbcache.h"
 
-//Spread 클래스
+//Spread 메소드 클래스
 #include "ClientHandler/Spread/spreadhandler.h"
 
-//Search 클래스
+//Search 메소드 클래스
 #include "ClientHandler/Search/searchhandler.h"
 
-//Download 클래스
+//Download 메소드 클래스
 #include "ClientHandler/Download/downloadhandler.h"
 
 namespace Cuma
