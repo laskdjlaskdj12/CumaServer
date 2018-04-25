@@ -107,16 +107,20 @@ public slots:
     {
         try
         {
-            if (Socket.isNull())
+            if (!Socket->is_connect())
             {
-                throw ("Client : 소켓이 NULL입니다.");
+                if (Socket.isNull())
+                {
+                    throw ("Client : 소켓이 NULL입니다.");
+                }
+
+                Socket->make_QTcpSocket();
+
+                DEBUGLOG(ip + ":" + port + " 서버에 접속중..");
+
+                ConnectServer(port, ip);
+
             }
-
-            Socket->make_QTcpSocket();
-
-            DEBUGLOG(ip + ":" + port + " 서버에 접속중..");
-
-            ConnectServer(port, ip);
 
             SendBlock(Block);
 

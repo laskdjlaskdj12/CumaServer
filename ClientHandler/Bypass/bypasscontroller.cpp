@@ -2,33 +2,11 @@
 
 BypassController::BypassController(Cuma::Protocol::CumaProtocolBlock RecvProtocol,
                                    QSharedPointer<QtJsonSocketLib_v3>& Client):
+    RecvProtocol(RecvProtocol),
+    Client(Client),
     IsBypassBrockerActive(false)
 {
-    DEBUGLOG("다음 바이패스 서버에 연결하는 준비중..");
-    UpdateBypassInfo(RecvProtocol);
 
-    Cuma::Address::IpAddress NextServerAddress = GetNextBypassAddress(RecvProtocol);
-
-    DEBUGLOG("다음 바이패스 주소 : " + NextServerAddress.IP + ":" + QString::number(NextServerAddress.Port));
-
-    DEBUGLOG("다음 바이패스 서버에 연결 요청..");
-    QSharedPointer<QtJsonSocketLib_v3> NextBypassServer = ConnectNextBypassServer(NextServerAddress);
-
-    if (NextBypassServer.isNull())
-    {
-        ERRLOG("다음 바이패스에 연결 실패");
-        return;
-    }
-
-    SendBlock(NextBypassServer, RecvProtocol);
-
-    disconnect(Client.data(), SIGNAL(OnRecvEvent()), this, SLOT(OnRecv()));
-
-    StartBypassSession(Client, NextBypassServer);
-
-    IsBypassBrockerActive = true;
-
-    SendBypassConnectResult(Client, RecvProtocol);
 }
 
 BypassController::~BypassController()
@@ -81,6 +59,37 @@ void BypassController::StartBypassSession(QSharedPointer<QtJsonSocketLib_v3> Pre
 
     connect(bypassHandler.data(), SIGNAL(OnDisconnectNextServer()), this, SLOT(OnDisconnectNext()));
     connect(bypassHandler.data(), SIGNAL(OnDisconnectPreviewServer()), this, SLOT(OnDisconnectPreview()));
+}
+
+bool BypassController::StartBypassBroker()
+{
+    DEBUGLOG("다음 바이패스 서버에 연결하는 준비중..");
+    UpdateBypassInfo(RecvProtocol);
+
+    Cuma::Address::IpAddress NextServerAddress = GetNextBypassAddress(RecvProtocol);
+
+    DEBUGLOG("다음 바이패스 주소 : " + NextServerAddress.IP + ":" + QString::number(NextServerAddress.Port));
+
+    DEBUGLOG("다음 바이패스 서버에 연결 요청..");
+    QSharedPointer<QtJsonSocketLib_v3> NextBypassServer = ConnectNextBypassServer(NextServerAddress);
+
+    if (NextBypassServer.isNull())
+    {
+        ERRLOG("다음 바이패스에 연결 실패");
+        return IsBypassBrockerActive;
+    }
+
+    SendBlock(NextBypassServer, RecvProtocol);
+
+    disconnect(Client.data(), SIGNAL(OnRecvEvent()), this, SLOT(OnRecv()));
+
+    StartBypassSession(Client, NextBypassServer);
+
+    IsBypassBrockerActive = true;
+
+    SendBypassConnectResult(Client, RecvProtocol);
+
+    return IsBypassBrockerActive;
 }
 
 bool BypassController::Stop()

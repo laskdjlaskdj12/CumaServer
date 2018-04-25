@@ -79,22 +79,24 @@ void Cuma::ClientHandler::OnRecv()
     if (IsRequestBypass(RecvProtocol))
     {
         DEBUGLOG("바이패스 프로토콜 수신 ");
-        ClientRequestBypass = QSharedPointer<BypassController>::create(RecvProtocol,
-                              Client);
+        BypassController Bypass(RecvProtocol,
+                                Client);
+
+        Bypass.StartBypassBroker();
     }
 
     //바이패스가 아닌 Reply하는 클래스
     else
     {
         DEBUGLOG("바이패스가 아닌 프로토콜을 수신 ");
-        ClientRequestController = QSharedPointer<ClientController>::create(Client,
-                                  ServerList,
-                                  DbAddressPath,
-                                  DbFileFragInfo,
-                                  FileBlockStorage,
-                                  Algorithm);
+        ClientController Controller(Client,
+                                    ServerList,
+                                    DbAddressPath,
+                                    DbFileFragInfo,
+                                    FileBlockStorage,
+                                    Algorithm);
 
-        ClientRequestController->ReplyControl(RecvProtocol);
+        Controller.ReplyControl(RecvProtocol);
     }
 }
 

@@ -19,6 +19,19 @@ public:
 
     ~BypassController();
 
+    bool StartBypassBroker();
+
+    bool IsBypassBrockerActive;
+
+    bool Stop();
+
+public:
+    Cuma::Protocol::CumaProtocolBlock RecvBlock(QSharedPointer<QtJsonSocketLib_v3>& client);
+
+    bool SendBlock(QSharedPointer<QtJsonSocketLib_v3>& client, Cuma::Protocol::CumaProtocolBlock Block);
+
+protected:
+
     void UpdateBypassInfo(Cuma::Protocol::CumaProtocolBlock& Block);
 
     QSharedPointer<QtJsonSocketLib_v3> ConnectNextBypassServer(Cuma::Address::IpAddress address);
@@ -27,16 +40,9 @@ public:
 
     void StartBypassSession(QSharedPointer<QtJsonSocketLib_v3> PreviewBypassServer, QSharedPointer<QtJsonSocketLib_v3> NextBypassServer);
 
-    bool Stop();
-public:
-    Cuma::Protocol::CumaProtocolBlock RecvBlock(QSharedPointer<QtJsonSocketLib_v3>& client);
 
-    bool SendBlock(QSharedPointer<QtJsonSocketLib_v3>& client, Cuma::Protocol::CumaProtocolBlock Block);
-
-protected:
     Cuma::Address::IpAddress GetNextBypassAddress(const Cuma::Protocol::CumaProtocolBlock& Block);
 
-    //BypassHandler에서 상태이상이 있을때 Preview Server로 전송
 public slots:
     void OnDisconnectPreview();
 
@@ -50,8 +56,9 @@ signals:
 private:
     QSharedPointer<BypassHandler> bypassHandler;
 
-    bool IsBypassBrockerActive;
+    QSharedPointer<QtJsonSocketLib_v3>& Client;
 
+    Cuma::Protocol::CumaProtocolBlock RecvProtocol;
 };
 
 #endif // BYPASSCONTROLLER_H
