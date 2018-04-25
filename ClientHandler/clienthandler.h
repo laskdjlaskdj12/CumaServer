@@ -14,23 +14,24 @@
 
 #include "ServerList/serverlist.h"
 #include "JsonSocketLib/qtjsonsocketlib_v3.h"
+
 #include "Protocol/Type/protocoltype.h"
 #include "Protocol/Template/protocoltemplate.h"
 #include "Protocol/protocol.h"
+
 #include "Block/AddressBlock/addressblock.h"
+
 #include "Type/ServerError/errorblock.h"
-#include "BypassHandler/bypasshandler.h"
 
 #include "DbFileFragInfo/dbcache.h"
 
-//Spread 메소드 클래스
-#include "ClientHandler/Spread/spreadhandler.h"
+#include "DbAddressPath/dbaddresspathbyfile.h"
 
-//Search 메소드 클래스
-#include "ClientHandler/Search/searchhandler.h"
+//ClientController 클래스
+#include "ClientHandler/Client/controller.h"
 
-//Download 메소드 클래스
-#include "ClientHandler/Download/downloadhandler.h"
+//BypassController 클래스
+#include "Bypass/bypasscontroller.h"
 
 namespace Cuma
 {
@@ -49,9 +50,11 @@ public:
 
     ~ClientHandler();
 
-    void ReplyControl(Cuma::Protocol::CumaProtocolBlock RecvProtocol);
-
     void ReplyFailControl(const Cuma::Protocol::CumaProtocolBlock& RecvBlock, const QString& str);
+
+    Cuma::Protocol::CumaProtocolBlock RecvBlock(QSharedPointer<QtJsonSocketLib_v3>& client);
+
+    bool SendBlock(QSharedPointer<QtJsonSocketLib_v3>& client, Cuma::Protocol::CumaProtocolBlock Block);
 
 public slots:
     void Start();
@@ -60,52 +63,27 @@ public slots:
 
     void OnRecv();
 
-    void OnDisconnectPreview();
-
-    void OnDisconnectNext();
-
+    //Bypass 영역
 protected:
     bool IsRequestBypass(const Cuma::Protocol::CumaProtocolBlock& Block);
 
-    void UpdateBypassInfo(Cuma::Protocol::CumaProtocolBlock& Block);
-
-    QSharedPointer<QtJsonSocketLib_v3> ConnectNextBypassServer(Cuma::Address::IpAddress address);
-
-    void SendConnectResult(QSharedPointer<QtJsonSocketLib_v3>& client, Cuma::Protocol::CumaProtocolBlock Block);
-
-    void StartBypassSession(QSharedPointer<QtJsonSocketLib_v3> PreviewBypassServer, QSharedPointer<QtJsonSocketLib_v3> NextBypassServer);
-
-    void ConnectHandler(Cuma::Protocol::CumaProtocolBlock Block);
-
+    //부모에게 상태 이상 메세지를 보내는 시그널
 signals:
     void EndProtocol(bool Success, Cuma::Protocol::CumaProtocolBlock ReqProtocol);
 
     void DisconnectClient(bool Success);
 
-    void DisconnectPreviewServer(bool Success);
+private:
+    QSharedPointer<ClientController> ClientRequestController;
 
-    void DisconnectNextServer(bool Success);
-
-protected:
-    bool SendBlock(QSharedPointer<QtJsonSocketLib_v3>& client, Cuma::Protocol::CumaProtocolBlock Block);
-
-    Cuma::Protocol::CumaProtocolBlock RecvBlock(QSharedPointer<QtJsonSocketLib_v3>& client);
-
-    Cuma::Address::IpAddress GetNextBypassAddress(const Cuma::Protocol::CumaProtocolBlock& Block);
+    QSharedPointer<BypassController> ClientRequestBypass;
 
 private:
     QSharedPointer<QtJsonSocketLib_v3> Client;
 
+private:
     QSharedPointer<NetworkConfig::ServerList> ServerList;
 
-    QSharedPointer<BypassHandler> bypassHandler;
-
-    bool IsBypassBrockerActive;
-
-private:
-    /*
-     * ConnectHandler 에서 사용한 Dependency
-     * */
     QSharedPointer<Cuma::DbAddress::DbAddressPathByFile>& DbAddressPath;
 
     QSharedPointer<Cuma::DbFileFrag::DbFileFragInfo>& DbFileFragInfo;
