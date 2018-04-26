@@ -55,7 +55,7 @@ void Cuma::ClientHandler::Stop()
 {
     if (ClientRequestBypass != nullptr)
     {
-        while ( ClientRequestBypass->Stop())
+        while (!ClientRequestBypass->Stop())
         {
             QThread::msleep(100);
         }
@@ -79,10 +79,15 @@ void Cuma::ClientHandler::OnRecv()
     if (IsRequestBypass(RecvProtocol))
     {
         DEBUGLOG("바이패스 프로토콜 수신 ");
-        BypassController Bypass(RecvProtocol,
-                                Client);
+        ClientRequestBypass = QSharedPointer<BypassController>::create(RecvProtocol,
+                              Client);
 
-        Bypass.StartBypassBroker();
+        ClientRequestBypass->StartBypassBroker();
+
+        if (ClientRequestBypass->IsBypassBrockerActive )
+        {
+            DEBUGLOG("바이패스 프로토콜 세션 연결 성공");
+        }
     }
 
     //바이패스가 아닌 Reply하는 클래스

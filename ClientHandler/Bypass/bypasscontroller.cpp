@@ -1,7 +1,7 @@
 #include "bypasscontroller.h"
 
 BypassController::BypassController(Cuma::Protocol::CumaProtocolBlock RecvProtocol,
-                                   QSharedPointer<QtJsonSocketLib_v3>& Client):
+                                   QSharedPointer<QtJsonSocketLib_v3> Client):
     RecvProtocol(RecvProtocol),
     Client(Client),
     IsBypassBrockerActive(false)
@@ -79,14 +79,21 @@ bool BypassController::StartBypassBroker()
         return IsBypassBrockerActive;
     }
 
-    SendBlock(NextBypassServer, RecvProtocol);
-
-    disconnect(Client.data(), SIGNAL(OnRecvEvent()), this, SLOT(OnRecv()));
-
+    DEBUGLOG("중계모드로 전환 완료 세션 시작 ");
     StartBypassSession(Client, NextBypassServer);
+
+    DEBUGLOG("다음 바이패스 프로토콜 전송");
+    if ( SendBlock(NextBypassServer, RecvProtocol) == false)
+    {
+        ERRLOG(NextBypassServer->GetErrorString());
+        return IsBypassBrockerActive;
+    }
+
+    Cuma::Protocol::CumaProtocolBlock DebugRecvBlock = RecvBlock(NextBypassServer);
 
     IsBypassBrockerActive = true;
 
+    DEBUGLOG("전 노드에게 다음 바이패스 연결 성공 전송");
     SendBypassConnectResult(Client, RecvProtocol);
 
     return IsBypassBrockerActive;
@@ -115,11 +122,13 @@ bool BypassController::SendBlock(QSharedPointer<QtJsonSocketLib_v3>& client, Cum
 
 void BypassController::OnDisconnectPreview()
 {
+    DEBUGLOG("이전 서버에서 접속 해제");
     emit DisconnectPreviewServer(true);
 }
 
 void BypassController::OnDisconnectNext()
 {
+    DEBUGLOG("다음 서버에서 접속 해제");
     emit DisconnectNextServer(true);
 }
 

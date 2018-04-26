@@ -15,7 +15,7 @@ class BypassController : public QObject
     Q_OBJECT
 public:
     BypassController(Cuma::Protocol::CumaProtocolBlock RecvProtocol,
-                     QSharedPointer<QtJsonSocketLib_v3>& Client);
+                     QSharedPointer<QtJsonSocketLib_v3> Client);
 
     ~BypassController();
 
@@ -56,7 +56,7 @@ signals:
 private:
     QSharedPointer<BypassHandler> bypassHandler;
 
-    QSharedPointer<QtJsonSocketLib_v3>& Client;
+    QSharedPointer<QtJsonSocketLib_v3> Client;
 
     Cuma::Protocol::CumaProtocolBlock RecvProtocol;
 };

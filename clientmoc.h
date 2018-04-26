@@ -127,7 +127,7 @@ public slots:
             DEBUGLOG("클라이언트에서 전송을 했습니다.");
 
             //프로토콜이 Bypass일경우
-            if (Block.ProtocolType == Cuma::Protocol::Bypass)
+            if (Block.Address.BypassArray.count() > 0 )
             {
                 RecvBypassByPathCount(Block);
             }

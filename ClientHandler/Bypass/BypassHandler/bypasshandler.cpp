@@ -5,6 +5,8 @@ BypassHandler::BypassHandler(QSharedPointer<QtJsonSocketLib_v3> previewServer,
     PreviewServer(previewServer),
     NextServer(nextServer)
 {
+    DEBUGLOG("다음 서버리스트에 연결");
+
     connect(NextServer.data(), SIGNAL(OnRecvEvent()), this, SLOT(OnNextBypassSessionRecv()));
     connect(NextServer.data(), SIGNAL(OnDisconnectEvent()), this, SLOT(OnNextBypassSessionDisconnect()));
     connect(PreviewServer.data(), SIGNAL(OnRecvEvent()), this, SLOT(OnPreviewBypassSessionRecv()));
@@ -60,12 +62,14 @@ bool BypassHandler::Stop()
 
 void BypassHandler::OnPreviewBypassSessionRecv()
 {
+    DEBUGLOG("이전 서버로부터 수신");
     Cuma::Protocol::CumaProtocolBlock RecvBlockInfo = RecvBlock(PreviewServer);
     SendBlock(NextServer, RecvBlockInfo);
 }
 
 void BypassHandler::OnPreviewBypassSessionDisconnect()
 {
+    DEBUGLOG("이전 서버로부터 연결 중단");
     NextServer->disconnect_socket();
     PreviewServer->disconnect_socket();
 
@@ -74,12 +78,14 @@ void BypassHandler::OnPreviewBypassSessionDisconnect()
 
 void BypassHandler::OnNextBypassSessionRecv()
 {
+    DEBUGLOG("다음 서버로부터 수신");
     Cuma::Protocol::CumaProtocolBlock RecvBlockInfo = RecvBlock(NextServer);
     SendBlock(PreviewServer, RecvBlockInfo);
 }
 
 void BypassHandler::OnNextBypassSessionDisconnect()
 {
+    DEBUGLOG("다음 서버로부터 연결 중단");
     NextServer->disconnect_socket();
     PreviewServer->disconnect_socket();
 

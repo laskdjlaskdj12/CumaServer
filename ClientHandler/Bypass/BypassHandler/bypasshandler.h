@@ -6,6 +6,7 @@
 #include <QSharedPointer>
 
 #include "Protocol/protocol.h"
+#include "Log/debuglog.h"
 #include "Block/FileBlock/blockstruct.h"
 #include "Block/AddressBlock/addressblock.h"
 #include "JsonSocketLib//qtjsonsocketlib_v3.h"
