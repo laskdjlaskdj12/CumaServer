@@ -248,6 +248,7 @@ protected:
         ReturnBlock.Address.From.Port = 7070;
         ReturnBlock.Address.To.IP = "127.0.0.1";
         ReturnBlock.Address.To.Port = 7071;
+        ReturnBlock.Address.PathCount = 0;
         ReturnBlock.ProtocolType = Cuma::Protocol::Connect;
         ReturnBlock.Address.Direction = Cuma::Address::Req;
 
@@ -274,6 +275,40 @@ protected:
         ReturnList.append(Server2);
 
         return ReturnList;
+    }
+
+    Cuma::Protocol::CumaProtocolBlock makeRequestBypassSpread(Cuma::FileBlock::FileBlock Block, QVector<Cuma::Address::IpAddress> BypassList)
+    {
+        Cuma::Protocol::CumaProtocolBlock ReturnBlock;
+
+        ReturnBlock.Address.BypassArray = Cuma::Address::Serlize::SerlizeIPAddress(BypassList);
+        ReturnBlock.Address.From.IP = "127.0.0.1";
+        ReturnBlock.Address.From.Port = 7070;
+        ReturnBlock.Address.To.IP = "127.0.0.1";
+        ReturnBlock.Address.To.Port = 7071;
+        ReturnBlock.Address.PathCount = 0;
+        ReturnBlock.ProtocolType = Cuma::Protocol::Spread;
+        ReturnBlock.Address.Direction = Cuma::Address::Req;
+        ReturnBlock.Data = QJsonDocument(Cuma::FileBlock::Serlize::FileBlockToJson(Block)).toJson();
+
+        return ReturnBlock;
+    }
+
+    Cuma::Protocol::CumaProtocolBlock makeRequestBypassDownload(Cuma::FileBlock::FileFragInfo Block, QVector<Cuma::Address::IpAddress> BypassList)
+    {
+        Cuma::Protocol::CumaProtocolBlock ReturnBlock;
+
+        ReturnBlock.Address.BypassArray = Cuma::Address::Serlize::SerlizeIPAddress(BypassList);
+        ReturnBlock.Address.From.IP = "127.0.0.1";
+        ReturnBlock.Address.From.Port = 7070;
+        ReturnBlock.Address.To.IP = "127.0.0.1";
+        ReturnBlock.Address.To.Port = 7071;
+        ReturnBlock.Address.PathCount = 0;
+        ReturnBlock.ProtocolType = Cuma::Protocol::Download;
+        ReturnBlock.Address.Direction = Cuma::Address::Req;
+        ReturnBlock.Data = QJsonDocument(Cuma::FileBlock::Serlize::FileInfoToJson(Block)).toJson();
+
+        return ReturnBlock;
     }
 
 private:
@@ -446,14 +481,57 @@ private slots:
     //        StopServerAndClient(Client, ClientThread, Server, ServerThread);
     //    }
 
-    //    void ServerSuccessDownload()
+    //        void ServerSuccessDownload()
+    //        {
+    //            qRegisterMetaType<Cuma::Protocol::CumaProtocolBlock>("Cuma::Protocol::CumaProtocolBlock");
+
+    //            //서버를 실행
+    //            QSharedPointer<Cuma::Server> Server = makeServer(Server);
+    //            QSharedPointer<QThread> ServerThread = QSharedPointer<QThread>::create();
+    //            StartServerThread(Server, ServerThread);
+
+    //            //moc클라이언트를 실행
+    //            QSharedPointer<QThread> ClientThread = QSharedPointer<QThread>::create();
+    //            QSharedPointer<TestClient> Client = QSharedPointer<TestClient>::create();
+    //            StartClientThread(Client, ClientThread);
+
+    //            QSignalSpy ClientRecvSignal(Client.data(), &TestClient::Complete);
+
+    //            //파일을 Spread로 전송
+    //            Cuma::FileBlock::FileBlock SpreadFileBlock = makeSpreadFileMoc();
+
+    //            Cuma::Protocol::CumaProtocolBlock RequestSpread = makeRequestSpread(SpreadFileBlock);
+
+    //            emit SendProtocol("127.0.0.1", 7071, RequestSpread);
+
+    //            //파일의 정상적으로 Spread가 됬는지 확인
+    //            QVERIFY (ClientRecvSignal.wait(5000) == true);
+
+    //            Cuma::FileBlock::FileFragInfo SearchFileBlock = makeDownloadFileInfo(SpreadFileBlock);
+
+    //            Cuma::Protocol::CumaProtocolBlock RequestDownload = makeRequestDownload(SearchFileBlock);
+
+    //            emit SendProtocol("127.0.0.1", 7071, RequestDownload);
+
+    //            QVERIFY (ClientRecvSignal.wait(5000) == true);
+
+    //            QVERIFY (ClientRecvSignal.takeFirst().at(0).toBool());
+
+    //            StopServerAndClient(Client, ClientThread, Server, ServerThread);
+    //        }
+
+    //    void ServerConnectBypass()
     //    {
     //        qRegisterMetaType<Cuma::Protocol::CumaProtocolBlock>("Cuma::Protocol::CumaProtocolBlock");
 
     //        //서버를 실행
-    //        QSharedPointer<Cuma::Server> Server = makeServer(Server);
-    //        QSharedPointer<QThread> ServerThread = QSharedPointer<QThread>::create();
-    //        StartServerThread(Server, ServerThread);
+    //        QSharedPointer<Cuma::Server> BrokerServer = makeServer(7071);
+    //        QSharedPointer<QThread> BrokerServerThread = QSharedPointer<QThread>::create();
+    //        StartServerThread(BrokerServer, BrokerServerThread);
+
+    //        QSharedPointer<Cuma::Server> DestinationServer = makeServer(7072);
+    //        QSharedPointer<QThread> DestinationServerThread = QSharedPointer<QThread>::create();
+    //        StartServerThread(DestinationServer, DestinationServerThread);
 
     //        //moc클라이언트를 실행
     //        QSharedPointer<QThread> ClientThread = QSharedPointer<QThread>::create();
@@ -462,30 +540,63 @@ private slots:
 
     //        QSignalSpy ClientRecvSignal(Client.data(), &TestClient::Complete);
 
-    //        //파일을 Spread로 전송
-    //        Cuma::FileBlock::FileBlock SpreadFileBlock = makeSpreadFileMoc();
+    //        //Connect 리퀘스트를 전송
 
-    //        Cuma::Protocol::CumaProtocolBlock RequestSpread = makeRequestSpread(SpreadFileBlock);
+    //        QVector<Cuma::Address::IpAddress> BypassAddressList = makeBypassAddressList();
+
+    //        Cuma::Protocol::CumaProtocolBlock RequestSpread = makeRequestBypassConnect(BypassAddressList);
+
+    //        emit SendProtocol("127.0.0.1", 7071, RequestSpread);
+
+    //        QThread::msleep(3000);
+    //        //파일의 정상적으로 Spread가 됬는지 확인
+    //        QVERIFY (ClientRecvSignal.count() == 1);
+
+    //        QVERIFY (ClientRecvSignal.takeFirst().at(0).toBool());
+
+    //        StopServerAndClient(Client, ClientThread, DestinationServer, DestinationServerThread);
+    //        StopBrokerServer(BrokerServer, BrokerServerThread);
+    //    }
+
+    //    void ServerSpreadBypass()
+    //    {
+    //        qRegisterMetaType<Cuma::Protocol::CumaProtocolBlock>("Cuma::Protocol::CumaProtocolBlock");
+
+    //        //서버를 실행
+    //        QSharedPointer<Cuma::Server> BrokerServer = makeServer(7071);
+    //        QSharedPointer<QThread> BrokerServerThread = QSharedPointer<QThread>::create();
+    //        StartServerThread(BrokerServer, BrokerServerThread);
+
+    //        QSharedPointer<Cuma::Server> DestinationServer = makeServer(7072);
+    //        QSharedPointer<QThread> DestinationServerThread = QSharedPointer<QThread>::create();
+    //        StartServerThread(DestinationServer, DestinationServerThread);
+
+    //        //moc클라이언트를 실행
+    //        QSharedPointer<QThread> ClientThread = QSharedPointer<QThread>::create();
+    //        QSharedPointer<TestClient> Client = QSharedPointer<TestClient>::create();
+    //        StartClientThread(Client, ClientThread);
+
+    //        QSignalSpy ClientRecvSignal(Client.data(), &TestClient::Complete);
+
+    //        //Connect 리퀘스트를 전송
+
+    //        QVector<Cuma::Address::IpAddress> BypassAddressList = makeBypassAddressList();
+
+    //        Cuma::FileBlock::FileBlock FileBlock = makeSpreadFileMoc();
+    //        Cuma::Protocol::CumaProtocolBlock RequestSpread = makeRequestBypassSpread(FileBlock, BypassAddressList);
 
     //        emit SendProtocol("127.0.0.1", 7071, RequestSpread);
 
     //        //파일의 정상적으로 Spread가 됬는지 확인
-    //        QVERIFY (ClientRecvSignal.wait(5000) == true);
-
-    //        Cuma::FileBlock::FileFragInfo SearchFileBlock = makeDownloadFileInfo(SpreadFileBlock);
-
-    //        Cuma::Protocol::CumaProtocolBlock RequestDownload = makeRequestDownload(SearchFileBlock);
-
-    //        emit SendProtocol("127.0.0.1", 7071, RequestDownload);
-
-    //        QVERIFY (ClientRecvSignal.wait(5000) == true);
+    //        QVERIFY (ClientRecvSignal.wait());
 
     //        QVERIFY (ClientRecvSignal.takeFirst().at(0).toBool());
 
-    //        StopServerAndClient(Client, ClientThread, Server, ServerThread);
+    //        StopServerAndClient(Client, ClientThread, DestinationServer, DestinationServerThread);
+    //        StopBrokerServer(BrokerServer, BrokerServerThread);
     //    }
 
-    void ServerConnectBypass()
+    void ServerDownloadBypass()
     {
         qRegisterMetaType<Cuma::Protocol::CumaProtocolBlock>("Cuma::Protocol::CumaProtocolBlock");
 
@@ -509,20 +620,20 @@ private slots:
 
         QVector<Cuma::Address::IpAddress> BypassAddressList = makeBypassAddressList();
 
-        Cuma::Protocol::CumaProtocolBlock RequestSpread = makeRequestBypassConnect(BypassAddressList);
+        Cuma::FileBlock::FileBlock FileBlock = makeSpreadFileMoc();
+        Cuma::FileBlock::FileFragInfo FileInfo = makeDownloadFileInfo(FileBlock);
+        Cuma::Protocol::CumaProtocolBlock RequestDownload = makeRequestBypassDownload(FileInfo, BypassAddressList);
 
-        emit SendProtocol("127.0.0.1", 7071, RequestSpread);
+        emit SendProtocol("127.0.0.1", 7071, RequestDownload);
 
-        QThread::msleep(3000);
         //파일의 정상적으로 Spread가 됬는지 확인
-        QVERIFY (ClientRecvSignal.count() == 1);
+        QVERIFY (ClientRecvSignal.wait());
 
         QVERIFY (ClientRecvSignal.takeFirst().at(0).toBool());
 
         StopServerAndClient(Client, ClientThread, DestinationServer, DestinationServerThread);
         StopBrokerServer(BrokerServer, BrokerServerThread);
     }
-
 };
 
 QTEST_MAIN(ServerTest)
