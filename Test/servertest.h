@@ -184,6 +184,31 @@ protected:
         return ReturnBlock;
     }
 
+    Cuma::FileBlock::FileFragInfo makeDownloadFileInfo(Cuma::FileBlock::FileBlock FileBlock)
+    {
+        Cuma::FileBlock::FileFragInfo ReturnInfo;
+        ReturnInfo.FileName = FileBlock.FileName;
+        ReturnInfo.FilePid = QCryptographicHash::hash(FileBlock.FileSource, QCryptographicHash::Sha3_512);
+        ReturnInfo.Index = 0;
+
+        return ReturnInfo;
+    }
+
+    Cuma::Protocol::CumaProtocolBlock makeRequestDownload(Cuma::FileBlock::FileFragInfo info)
+    {
+        Cuma::Protocol::CumaProtocolBlock ReturnBlock;
+
+        ReturnBlock.Address.From.IP = "127.0.0.1";
+        ReturnBlock.Address.From.Port = 7070;
+        ReturnBlock.Address.To.IP = "127.0.0.1";
+        ReturnBlock.Address.To.Port = 7071;
+        ReturnBlock.ProtocolType = Cuma::Protocol::Download;
+        ReturnBlock.Address.Direction = Cuma::Address::Req;
+        ReturnBlock.Data = QJsonDocument(Cuma::FileBlock::Serlize::FileInfoToJson(info)).toJson();
+
+        return ReturnBlock;
+    }
+
 private:
     QSharedPointer<Cuma::DbAddress::DbAddressPathByFile> TestDbAddressByFile;
     QSharedPointer<Cuma::FileBlockStorage::FileFragDir> TestFileBlockStorage;
@@ -315,7 +340,46 @@ private slots:
     //        StopServerAndClient(Client, ClientThread, Server, ServerThread);
     //    }
 
-    void ServerSuccessSearch()
+    //    void ServerSuccessSearch()
+    //    {
+    //        qRegisterMetaType<Cuma::Protocol::CumaProtocolBlock>("Cuma::Protocol::CumaProtocolBlock");
+
+    //        //서버를 실행
+    //        QSharedPointer<Cuma::Server> Server = makeServer(Server);
+    //        QSharedPointer<QThread> ServerThread = QSharedPointer<QThread>::create();
+    //        StartServerThread(Server, ServerThread);
+
+    //        //moc클라이언트를 실행
+    //        QSharedPointer<QThread> ClientThread = QSharedPointer<QThread>::create();
+    //        QSharedPointer<TestClient> Client = QSharedPointer<TestClient>::create();
+    //        StartClientThread(Client, ClientThread);
+
+    //        QSignalSpy ClientRecvSignal(Client.data(), &TestClient::Complete);
+
+    //        //파일을 Spread로 전송
+    //        Cuma::FileBlock::FileBlock SpreadFileBlock = makeSpreadFileMoc();
+
+    //        Cuma::Protocol::CumaProtocolBlock RequestSpread = makeRequestSpread(SpreadFileBlock);
+
+    //        emit SendProtocol("127.0.0.1", 7071, RequestSpread);
+
+    //        //파일의 정상적으로 Spread가 됬는지 확인
+    //        QVERIFY (ClientRecvSignal.wait(5000) == true);
+
+    //        Cuma::FileBlock::FileFragInfo SearchFileBlock = makeSearchFileFragInfo();
+
+    //        Cuma::Protocol::CumaProtocolBlock RequestSearch = makeRequestSearch(SearchFileBlock);
+
+    //        emit SendProtocol("127.0.0.1", 7071, RequestSearch);
+
+    //        QVERIFY (ClientRecvSignal.wait(5000) == true);
+
+    //        QVERIFY (ClientRecvSignal.takeFirst().at(0).toBool());
+
+    //        StopServerAndClient(Client, ClientThread, Server, ServerThread);
+    //    }
+
+    void ServerSuccessDownload()
     {
         qRegisterMetaType<Cuma::Protocol::CumaProtocolBlock>("Cuma::Protocol::CumaProtocolBlock");
 
@@ -341,11 +405,11 @@ private slots:
         //파일의 정상적으로 Spread가 됬는지 확인
         QVERIFY (ClientRecvSignal.wait(5000) == true);
 
-        Cuma::FileBlock::FileFragInfo SearchFileBlock = makeSearchFileFragInfo();
+        Cuma::FileBlock::FileFragInfo SearchFileBlock = makeDownloadFileInfo(SpreadFileBlock);
 
-        Cuma::Protocol::CumaProtocolBlock RequestSearch = makeRequestSearch(SearchFileBlock);
+        Cuma::Protocol::CumaProtocolBlock RequestDownload = makeRequestDownload(SearchFileBlock);
 
-        emit SendProtocol("127.0.0.1", 7071, RequestSearch);
+        emit SendProtocol("127.0.0.1", 7071, RequestDownload);
 
         QVERIFY (ClientRecvSignal.wait(5000) == true);
 

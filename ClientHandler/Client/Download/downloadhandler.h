@@ -40,8 +40,9 @@ public:
     static Cuma::Protocol::CumaProtocolBlock MakeReplySuccess(Cuma::Protocol::CumaProtocolBlock protocol, QByteArray FileSource, Cuma::FileBlock::FileFragInfo info);
 
     static Cuma::Protocol::CumaProtocolBlock MakeReplyFail(Cuma::Protocol::CumaProtocolBlock protocol);
+
 protected:
-    QByteArray ReadFileFragDir(QUrl FileSaveLocation);
+    QByteArray ReadFileFragDir(QString FileName, unsigned int Index, QUrl FileSaveLocation);
 
 };
 

@@ -9,7 +9,7 @@ DownloadHandler::DownloadHandler(QSharedPointer<Cuma::DbFileFrag::DbFileFragInfo
     isReadFileError(false)
 {
 
-    QJsonObject RequestFileFragInfoJson = QJsonDocument::fromBinaryData(RequestProtocol.Data).object();
+    QJsonObject RequestFileFragInfoJson = QJsonDocument::fromJson(RequestProtocol.Data).object();
 
     //파일에서 Block이 있는지 확인
     Cuma::FileBlock::FileFragInfo ReqFileBlockInfo = Cuma::FileBlock::Serlize::JsonToFileInfo(RequestFileFragInfoJson);
@@ -27,7 +27,13 @@ DownloadHandler::DownloadHandler(QSharedPointer<Cuma::DbFileFrag::DbFileFragInfo
     //Block을 검색해서 로드
     QUrl FileSaveLocation = DbFileFragInfo->SearchFile(ReqFileBlockInfo);
 
-    FileResource = ReadFileFragDir(FileSaveLocation);
+    FileResource = ReadFileFragDir(ReqFileBlockInfo.FileName, ReqFileBlockInfo.Index, FileSaveLocation);
+
+    if (FileResource.isEmpty())
+    {
+        isSuccess = false;
+        return;
+    }
 
     isSuccess = true;
 }
@@ -62,13 +68,22 @@ Cuma::Protocol::CumaProtocolBlock DownloadHandler::MakeReplySuccess(Cuma::Protoc
 
 Cuma::Protocol::CumaProtocolBlock DownloadHandler::MakeReplyFail(Cuma::Protocol::CumaProtocolBlock protocol)
 {
+    QJsonObject DataObj;
+    DataObj["Success"] = false;
 
+    Cuma::Protocol::CumaProtocolBlock returnProtocol;
+    returnProtocol.Address = Cuma::Address::ChangeAddressDirection(protocol.Address);
+    returnProtocol.Data = QJsonDocument(DataObj).toJson();
+
+    return returnProtocol;
 }
 
-QByteArray DownloadHandler::ReadFileFragDir(QUrl FileSaveLocation)
+QByteArray DownloadHandler::ReadFileFragDir(QString FileName, unsigned int Index, QUrl FileSaveLocation)
 {
     //해당 파일을 open함
-    QFile CumaFile(FileSaveLocation.toString());
+    QString DownloadFileName = FileName + QString::number(Index) + ".Cuma";
+
+    QFile CumaFile(FileSaveLocation.toString() + "/" + DownloadFileName);
 
     QByteArray FileSource;
 

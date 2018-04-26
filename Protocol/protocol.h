@@ -47,8 +47,8 @@ public:
         ToAddress["Port"] = static_cast<int>(Block.Address.To.Port);
 
         QJsonObject FromAddress;
-        ToAddress["IP"] = static_cast<QString>(Block.Address.From.IP);
-        ToAddress["Port"] = static_cast<int>(Block.Address.From.Port);
+        FromAddress["IP"] = static_cast<QString>(Block.Address.From.IP);
+        FromAddress["Port"] = static_cast<int>(Block.Address.From.Port);
 
         QJsonObject Result;
 
@@ -74,6 +74,8 @@ public:
         FromAddress.Port = static_cast<int>(Block["From"].toObject()["Port"].toInt());
 
         Cuma::Protocol::CumaProtocolBlock Result;
+        Result.Address.From = FromAddress;
+        Result.Address.To = ToAddress;
         Result.Address.BypassArray = Block["Bypass"].toArray();
         Result.Address.Direction = static_cast<Cuma::Address::BypassDirection>(Block["Direction"].toInt());
         Result.Address.PathCount = Block["PathCount"].toInt();
