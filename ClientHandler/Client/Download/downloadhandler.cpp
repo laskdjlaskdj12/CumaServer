@@ -27,6 +27,13 @@ DownloadHandler::DownloadHandler(QSharedPointer<Cuma::DbFileFrag::DbFileFragInfo
     //Block을 검색해서 로드
     QUrl FileSaveLocation = DbFileFragInfo->SearchFile(ReqFileBlockInfo);
 
+    if (FileSaveLocation.isValid() == false)
+    {
+        DEBUGLOG("파일이 없습니다.");
+        isSuccess = false;
+        return;
+    }
+
     FileResource = ReadFileFragDir(ReqFileBlockInfo.FileName, ReqFileBlockInfo.Index, FileSaveLocation);
 
     if (FileResource.isEmpty())
